@@ -2,13 +2,63 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Who runs America?</title>
 </head>
-<!--<link rel = "stylesheet" href="css/vis.css">-->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.20/fullpage.css" integrity="sha512-wCVOuVtxsXqrQK7tj9j4BvyfITQmpp7UE7mVilD7aieGLYFEIAa5UKTP1RapOf6dxQ9JIKAneakcyykWG4r4Ow==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel = "stylesheet" href="css/screenstyle.css">
 <body>
-    <div>
-        This is a demo.
+    <div id="app">
+        <div id="fullpage">
+            <div class="section">
+                <div class="screen" id="screen-1">
+                    <div class="center-vertical" id="screen-1-str">{{screen1Str}}</div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="screen" id="screen-2">gif</div>
+            </div>
+            <div class="section">
+                <div class="screen" id="screen-3">
+                    <div id="screen-3-str">The 117th Congress as an example<br> <span id="screen-3-str-strike">535</span> members in total</div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </body>
-<!--<script src = "js/ref/jquery.min.js"></script>-->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.20/fullpage.min.js"></script>
+<script>
+    const { createApp } = Vue
+
+    createApp({
+        data() {
+            return {
+                screen1Str: '\\ WHO RUNS AMERICA \\'
+            }
+        },
+        mounted(){
+            new fullpage('#fullpage', {
+                licenseKey: 'YOUR_KEY_HERE'
+            });
+            // $(document).on("mousewheel DOMMouseScroll", function (event) {
+            //
+            //     var delta = (event.originalEvent.wheelDelta && (event.originalEvent.wheelDelta > 0 ? 1 : -1)) ||
+            //         (event.originalEvent.detail && (event.originalEvent.detail > 0 ? -1 : 1));
+            //     if (delta > 0) {
+            //         // 向上滚
+            //         console.log("up+++++");
+            //         //do somthing
+            //     } else if (delta < 0) {
+            //         // 向下滚
+            //         console.log("down+++++");
+            //         //do somthing
+            //     }
+            // });
+        }
+    }).mount('#app')
+</script>
+
 </html>
