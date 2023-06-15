@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    #screen-4-map{
+        position: absolute;
+        top: 0;
+        width: 800px;
+        height: 800px;
+    }
+</style>
+<body>
+<div id="app">
+    <div id="screen-4-map"></div>
+</div>
+</body>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
+<script>
+    const {createApp} = Vue
+    createApp({
+        data() {
+            return {
+                screen1Str: '\\ WHO RUNS AMERICA \\'
+            }
+        },
+        mounted() {
+            $.get("geoJson/USA.json", function (map) {
+                console.log(map)
+                let myChart = echarts.init(document.getElementById('screen-4-map'));
+                echarts.registerMap("US", map);
+                var option = {
+                    legend:{
+                        show: true,
+                        data: [{
+                            name:'1',
+                            icon:''
+                        }]
+                    },
+                    series: [{
+                        map: "US",
+                        type: "map",
+                        aspectScale: 1.0,
+                        selectedMode: 'single',//选择类型,
+                        hoverable: false,//鼠标经过高亮
+                        roam: true,//鼠标滚轮缩放
+                        itemStyle: {
+                            borderWidth: 1,
+                            borderColor: '#ffffff',//区域边框色
+                            areaColor: '#6fc0ff',//区域背景色
+                        },
+                        emphasis: {
+                            itemStyle: {
+                                borderWidth: 1,
+                                areaColor: '#003187',
+                                borderColor: '#003187',
+                                color: '#003187'
+                            },
+                            label:{
+                                color:'white',
+                                fontWeight:'bold'
+                            }
+                        },
+                    }]
+                };
+                myChart.setOption(option);
+            })
+        }
+    }).mount('#app')
+    const { createApp } = Vue
+    createApp({
+        data() {
+            return {
+                screen1Str: '\\ WHO RUNS AMERICA \\'
+            }
+        },
+        method: {
+            initBarChart() {
+                console.log(123)
+
+                $.get("data/data.json", function (data) {
+                    console.log(data)
+                    const svg = d3.select('svg')
+                    const circleAppend = svg.selectAll('circle').data(data).enter().append("circle")
+                    circleAppend.attr('r', 2)
+                    const indexListX=Array.from({length:8}, ()=>(-1))
+                    const indexListY=Array.from({length:8}, ()=>(-1))
+                    // console.log(indexList, yearList)
+                    const allCircle=d3.select('svg').selectAll('circle')
+
+                    allCircle.data(orderBy(this.jsonData,['Gender'],['desc'])).transition().duration(1000)
+                        .attr('cx', function(d){
+                            let xIndex=0
+                            let tmpYear=Math.floor(d['Birth year']/10)*10
+                            let tmpIndex=indexOf(yearList, tmpYear)
+                            indexListX[tmpIndex]+=1
+
+                            xIndex=tmpIndex*110+indexListX[tmpIndex]%20*5
+                            return xIndex
+                        })
+                        .attr('cy', function (d) {
+                            let tmpIndex=indexOf(yearList, Math.floor(d['Birth year']/10)*10)
+                            // console.log(400-(Math.floor(indexList[tmpIndex]/20)*4))
+                            indexListY[tmpIndex]+=1
+                            return 450-(Math.floor(indexListY[tmpIndex]/20)*5)
+                        })
+                        .attr('fill', function (item) {
+                            if (isEqual(item.Gender,'Male')){
+                                return '#3fa9f5'
+                            }else {
+                                return '#f46fa9'
+                            }
+                        })
+                })
+            },
+            initUSMap() {
+                $.get("geoJson/USA.json", function (map) {
+                    console.log(map)
+                    let myChart = echarts.init(document.getElementById('screen-5-map'));
+                    echarts.registerMap("US", map);
+                    var option = {
+                        legend: {
+                            show: true,
+                            data: [{
+                                name: '1',
+                                icon: ''
+                            }]
+                        },
+                        series: [{
+                            map: "US",
+                            type: "map",
+                            aspectScale: 1.0,
+                            selectedMode: 'single',//选择类型,
+                            hoverable: false,//鼠标经过高亮
+                            roam: true,//鼠标滚轮缩放
+                            itemStyle: {
+                                borderWidth: 1,
+                                borderColor: '#ffffff',//区域边框色
+                                areaColor: '#6fc0ff',//区域背景色
+                            },
+                            emphasis: {
+                                itemStyle: {
+                                    borderWidth: 1,
+                                    areaColor: '#003187',
+                                    borderColor: '#003187',
+                                    color: '#003187'
+                                },
+                                label: {
+                                    color: 'white',
+                                    fontWeight: 'bold'
+                                }
+                            },
+                        }]
+                    };
+                    myChart.setOption(option);
+                })
+            },
+            mounted() {
+                console.log(123)
+                $.getJSON("/data.json", function (data) {
+                    console.log(data)
+                })
+                this.initUSMap()
+                this.initBarChart()
+
+
+            }
+        }
+    }).mount('#app')
+</script>
+</html>

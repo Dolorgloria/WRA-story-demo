@@ -5,21 +5,43 @@
     <title>Who runs America?</title>
 </head>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.20/fullpage.css" integrity="sha512-wCVOuVtxsXqrQK7tj9j4BvyfITQmpp7UE7mVilD7aieGLYFEIAa5UKTP1RapOf6dxQ9JIKAneakcyykWG4r4Ow==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="//unpkg.com/element-plus/dist/index.css" />
 <link rel = "stylesheet" href="css/screenstyle.css">
 <body>
     <div id="app">
         <div id="fullpage">
             <div class="section">
                 <div class="screen" id="screen-1">
+                    <div id="screen-4-map"></div>
                     <div class="center-vertical" id="screen-1-str">{{screen1Str}}</div>
                 </div>
             </div>
             <div class="section">
-                <div class="screen" id="screen-2">gif</div>
+                <div class="screen" id="screen-2">
+                    <img style="width: 100%;height: 100%;" src="images/tmp-screen-2.png" />
+                </div>
             </div>
             <div class="section">
                 <div class="screen" id="screen-3">
-                    <div id="screen-3-str">The 117th Congress as an example<br> <span id="screen-3-str-strike">535</span> members in total</div>
+                    <img style="width: 100%;height: 100%;" src="images/tmp-screen-3.png" />
+                </div>
+            </div>
+            <div class="section">
+                <div class="screen" id="screen-4">
+                    <div id="screen-4-chart"></div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="screen" id="screen-5">
+                    <div id="screen-5-map"></div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="screen" id="screen-6">
+                    <button style="margin-top:10px;margin-left:10px;height: 30px;width: 50px;background-color: white" onclick="triggerAnimation1()">切换</button>
+                    <div id="screen-6-chart">
+                        <svg style="position: absolute;top: 80px;left: 80px" width="800" height="600"></svg>
+                    </div>
                 </div>
             </div>
         </div>
@@ -30,35 +52,237 @@
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.20/fullpage.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+<script src="//unpkg.com/element-plus"></script>
+<!--<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>-->
 <script>
-    const { createApp } = Vue
+    function triggerAnimation1() {
+        $.get("data/data.json", function (data) {
+            const indexListX=Array.from({length:6}, ()=>(-1))
+            const indexListY=Array.from({length:6}, ()=>(-1))
+            const seniorityList=[0, 10, 20, 30, 40, 50]
+            const svg = d3.select('svg')
+            const allCircle=svg.selectAll('circle')
+            allCircle.data(_.orderBy(data, ['Seniority'])).transition().duration(1000)
+                .attr('cx', function(d){
+                    console.log(d)
+                    let xIndex=0
+                    let floorSeniority=Math.floor(d['Seniority']/10)*10
+                    let tmpIndex=_.indexOf(seniorityList, floorSeniority)
+                    console.log(tmpIndex)
+                    indexListX[tmpIndex]+=1
 
+                    xIndex=tmpIndex*110+indexListX[tmpIndex]%20*5
+                    return xIndex
+                })
+                .attr('cy', function (d) {
+                    let tmpIndex=_.indexOf(seniorityList, Math.floor(d['Seniority']/10)*10)
+                    // console.log(400-(Math.floor(indexList[tmpIndex]/20)*4))
+                    indexListY[tmpIndex]+=1
+                    return 200-(Math.floor(indexListY[tmpIndex]/20)*5)
+                })
+        })
+    }
+    function initPieChart(originData){
+        const data = [
+            { value: 420, name: 'A' },
+            { value: 114, name: 'B' }
+        ];
+        const defaultPalette = [
+            '#fece00',
+            '#fe7c00'
+        ];
+        const radius = ['30%', '80%'];
+        let myChart = echarts.init(document.getElementById('screen-4-chart'));
+        const parliamentOption = (function () {
+            let sum = data.reduce(function (sum, cur) {
+                return sum + cur.value;
+            }, 0);
+            let angles = [];
+            let startAngle = -Math.PI;
+            let curAngle = startAngle;
+            data.forEach(function (item) {
+                angles.push(curAngle);
+                curAngle += (item.value / sum) * Math.PI;
+            });
+            angles.push(startAngle + Math.PI);
+            function parliamentLayout(startAngle, endAngle, totalAngle, r0, r1, size) {
+                let rowsCount = Math.ceil((r1 - r0) / size);
+                let points = [];
+                let r = r0;
+                for (let i = 0; i < rowsCount; i++) {
+                    // Recalculate size
+                    let totalRingSeatsNumber = Math.round((totalAngle * r) / size);
+                    let newSize = (totalAngle * r) / totalRingSeatsNumber;
+                    for (
+                        let k = Math.floor((startAngle * r) / newSize) * newSize;
+                        k < Math.floor((endAngle * r) / newSize) * newSize - 1e-6;
+                        k += newSize
+                    ) {
+                        let angle = k / r;
+                        let x = Math.cos(angle) * r;
+                        let y = Math.sin(angle) * r;
+                        points.push([x, y]);
+                    }
+                    r += size;
+                }
+                return points;
+            }
+            return {
+                series: {
+                    type: 'custom',
+                    id: 'distribution',
+                    data: data,
+                    coordinateSystem: undefined,
+                    universalTransition: true,
+                    animationDurationUpdate: 1000,
+                    renderItem: function (params, api) {
+                        var idx = params.dataIndex;
+                        var viewSize = Math.min(api.getWidth(), api.getHeight());
+                        var r0 = ((parseFloat(radius[0]) / 100) * viewSize) / 2;
+                        var r1 = ((parseFloat(radius[1]) / 100) * viewSize) / 2;
+                        var cx = api.getWidth() * 0.5;
+                        var cy = api.getHeight() * 0.5;
+                        var size = viewSize / 50;
+                        var points = parliamentLayout(
+                            angles[idx],
+                            angles[idx + 1],
+                            Math.PI * 2,
+                            r0,
+                            r1,
+                            size + 3
+                        );
+                        return {
+                            type: 'group',
+                            children: points.map(function (pt) {
+                                return {
+                                    type: 'circle',
+                                    autoBatch: true,
+                                    shape: {
+                                        cx: cx + pt[0],
+                                        cy: cy + pt[1],
+                                        r: size / 2
+                                    },
+                                    style: {
+                                        fill: defaultPalette[idx % defaultPalette.length]
+                                    }
+                                };
+                            })
+                        };
+                    }
+                }
+            };
+        })();
+        myChart.setOption(parliamentOption);
+    }
+    const {createApp} = Vue
     createApp({
         data() {
             return {
+                jsonData:[],
                 screen1Str: '\\ WHO RUNS AMERICA \\'
             }
         },
-        mounted(){
-            new fullpage('#fullpage', {
-                licenseKey: 'YOUR_KEY_HERE'
-            });
-            // $(document).on("mousewheel DOMMouseScroll", function (event) {
-            //
-            //     var delta = (event.originalEvent.wheelDelta && (event.originalEvent.wheelDelta > 0 ? 1 : -1)) ||
-            //         (event.originalEvent.detail && (event.originalEvent.detail > 0 ? -1 : 1));
-            //     if (delta > 0) {
-            //         // 向上滚
-            //         console.log("up+++++");
-            //         //do somthing
-            //     } else if (delta < 0) {
-            //         // 向下滚
-            //         console.log("down+++++");
-            //         //do somthing
-            //     }
-            // });
+        mounted() {
+            function initFullPage() {
+                new fullpage('#fullpage', {
+                    licenseKey: 'YOUR_KEY_HERE'
+                });
+            }
+
+            function initMap() {
+                $.get("geoJson/USA.json", function (map) {
+                    console.log(map)
+                    let myChart = echarts.init(document.getElementById('screen-5-map'));
+                    echarts.registerMap("US", map);
+                    var option = {
+                        legend: {
+                            show: true,
+                            data: [{
+                                name: '1',
+                                icon: ''
+                            }]
+                        },
+                        series: [{
+                            map: "US",
+                            type: "map",
+                            aspectScale: 1.0,
+                            selectedMode: 'single',//选择类型,
+                            hoverable: false,//鼠标经过高亮
+                            roam: true,//鼠标滚轮缩放
+                            itemStyle: {
+                                borderWidth: 1,
+                                borderColor: '#ffffff',//区域边框色
+                                areaColor: '#6fc0ff',//区域背景色
+                            },
+                            emphasis: {
+                                itemStyle: {
+                                    borderWidth: 1,
+                                    areaColor: '#003187',
+                                    borderColor: '#003187',
+                                    color: '#003187'
+                                },
+                                label: {
+                                    color: 'white',
+                                    fontWeight: 'bold'
+                                }
+                            },
+                        }]
+                    };
+                    myChart.setOption(option);
+                })
+            }
+
+
+            function getOffsetX(i, offset) {
+                const blockIndex = _.floor(i / 25)
+                const blockRow = blockIndex % 11
+                const rowIndex = i % 25 % 5
+                return 2 + blockRow * 22 + rowIndex * 4 + offset
+            }
+            function getOffsetY(i, offset) {
+                const blockIndex = _.floor(i / 25)
+                const blockLine = _.floor(blockIndex / 11)
+                const lineIndex = _.floor(i % 25 / 5)
+                return 2 + blockLine * 22 + lineIndex * 4 + offset
+            }
+
+            initFullPage()
+
+            $.get('data/data.json', function (data) {
+                initPieChart(data)
+
+            })
+
+            $.get("data/data.json", function (data) {
+                const svg = d3.select('svg')
+                const circleAppend = svg.selectAll('circle').data(_.orderBy(data, ['Party2'], ['desc'])).enter().append("circle")
+                circleAppend.attr('r', 2)
+                    .attr('fill', function (d) {
+                        if (_.isEqual(d['Party2'], 1)) {
+                            return '#0261bf'
+                        } else if (_.isEqual(d['Party2'], 0)) {
+                            return '#fece00'
+                        } else {
+                            return '#fef471'
+                        }
+                    })
+                    .attr('cx', function (d, i) {
+                        return getOffsetX(i, 0)
+                    })
+                    .attr('cy', function (d, i) {
+                        return getOffsetY(i, 0)
+                    })
+            })
+
+
+            initMap()
+
+
         }
     }).mount('#app')
+
 </script>
 
 </html>
