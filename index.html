@@ -40,7 +40,7 @@
                 <div class="screen" id="screen-6">
                     <button style="margin-top:10px;margin-left:10px;height: 30px;width: 50px;background-color: white" onclick="triggerAnimation1()">切换</button>
                     <div id="screen-6-chart">
-                        <svg style="position: absolute;top: 80px;left: 80px" width="800" height="600"></svg>
+                        <svg style="position: absolute;top: 80px;left: 80px" width="1200" height="800"></svg>
                     </div>
                 </div>
             </div>
@@ -73,16 +73,41 @@
                     console.log(tmpIndex)
                     indexListX[tmpIndex]+=1
 
-                    xIndex=tmpIndex*110+indexListX[tmpIndex]%20*5
+                    xIndex=10+tmpIndex*160+indexListX[tmpIndex]%10*12
                     return xIndex
                 })
                 .attr('cy', function (d) {
                     let tmpIndex=_.indexOf(seniorityList, Math.floor(d['Seniority']/10)*10)
                     // console.log(400-(Math.floor(indexList[tmpIndex]/20)*4))
                     indexListY[tmpIndex]+=1
-                    return 200-(Math.floor(indexListY[tmpIndex]/20)*5)
+                    return 460-(Math.floor(indexListY[tmpIndex]/10)*12)
                 })
         })
+    }
+    function initBarChart(originData){
+        let myChart = echarts.init(document.getElementById('screen-4-chart'));
+        let option={
+            series:[{
+                type: 'custom',
+                data:originData,
+                renderItem: function (params, api) {
+                    console.log(123)
+                    return {
+                        type: 'circle',
+                        autoBatch: true,
+                        shape: {
+                            cx: 10,
+                            cy: 20,
+                            r: 5
+                        },
+                        style: {
+                            fill: 'black'
+                        }
+                    }
+                }
+            }]
+        }
+        myChart.setOption(option)
     }
     function initPieChart(originData){
         const data = [
@@ -174,6 +199,9 @@
                 }
             };
         })();
+        const barOption=(function () {
+            
+        })
         myChart.setOption(parliamentOption);
     }
     const {createApp} = Vue
@@ -239,13 +267,13 @@
                 const blockIndex = _.floor(i / 25)
                 const blockRow = blockIndex % 11
                 const rowIndex = i % 25 % 5
-                return 2 + blockRow * 22 + rowIndex * 4 + offset
+                return 10 + blockRow * 62 + rowIndex * 12 + offset
             }
             function getOffsetY(i, offset) {
                 const blockIndex = _.floor(i / 25)
                 const blockLine = _.floor(blockIndex / 11)
                 const lineIndex = _.floor(i % 25 / 5)
-                return 2 + blockLine * 22 + lineIndex * 4 + offset
+                return 10 + blockLine * 62 + lineIndex * 12 + offset
             }
 
             initFullPage()
@@ -258,7 +286,7 @@
             $.get("data/data.json", function (data) {
                 const svg = d3.select('svg')
                 const circleAppend = svg.selectAll('circle').data(_.orderBy(data, ['Party2'], ['desc'])).enter().append("circle")
-                circleAppend.attr('r', 2)
+                circleAppend.attr('r', 5)
                     .attr('fill', function (d) {
                         if (_.isEqual(d['Party2'], 1)) {
                             return '#0261bf'
