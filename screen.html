@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Who Runs America</title>
+</head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.20/fullpage.css" integrity="sha512-wCVOuVtxsXqrQK7tj9j4BvyfITQmpp7UE7mVilD7aieGLYFEIAa5UKTP1RapOf6dxQ9JIKAneakcyykWG4r4Ow==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<link rel="stylesheet/less" type="text/css" href="css/styles.less" />
+<body>
+  <div id="app">
+      <div id="fullpage">
+          <div class="section">
+              <div class="full-screen background-color-dark fp-auto-height" id="screen1" >
+                  <div id="screen1-str" class="screen-str">{{screen1Str}}</div>
+              </div>
+          </div>
+          <div class="section">
+              <div class="full-screen background-color-dark" id="screen2">
+                  <svg style="position: absolute;top: 80px;left: 80px" width="1200" height="800"></svg>
+
+              </div>
+          </div>
+          <div class="section">
+              <div class="full-screen background-color-dark" id="screen3" v-on:mousewheel="mouseMove1">
+                  <div id="screen3-map"></div>
+              </div>
+          </div>
+          <div class="section">
+              <div class="full-screen background-color-dark" id="screen4" v-on:mousewheel="mouseMove1">
+                  <div id="screen4-map"></div>
+              </div>
+          </div>
+      </div>
+  </div>
+</body>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://unpkg.com/vue@next"></script>
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.20/fullpage.min.js"></script>-->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/less@4" ></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js" integrity="sha512-wNH6xsp2n8CfB91nrBtfc4sfLwYPBMjSWVUwQOp60AYYXH6i8yCwuKFZ4rgK2i6pQek/b+bSyR7b01/922IBzQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="js/fullPage.js"></script>
+<script>
+  const app = {
+      data() {
+          return {
+              screen1Str: '\\ WHO RUNS AMERICA \\',
+              jsonData:undefined,
+              mapData:undefined,
+              index:1,
+              curIndex:1,
+              height:0,
+              now:0,
+              themeColorLight1:'#fece00',
+              themeColorLight2:'#fe7c00',
+              themeColorLight3:'#fef471',
+              themeColorDark1:'#013183',
+              themeColorDark2:'#001547',
+              themeColorDark3:'#0261bf'
+          }
+      },
+      methods: {
+          initFullPage(){
+              new fullpage('#fullpage', {
+                  scrollingSpeed: 800, //滚动的时间
+                  afterLoad: function(origin) {
+                      console.log(origin.index);//判断滚动到第几屏
+                  }
+              });
+          },
+          mouseMove1(event){
+              console.log(event)
+          },
+          getOffsetX(i,blockRowNum, offset){
+              const blockIndex = _.floor(i / 25)
+              const blockRow = blockIndex % blockRowNum
+              const rowIndex = i % 25 % 5
+              return 5 + blockRow * (12*5+6) + rowIndex * (5*2+2) + offset
+          },
+          getOffsetY(i,blockRowNum, offset){
+              const blockIndex = _.floor(i / 25)
+              const blockLine = _.floor(blockIndex / blockRowNum)
+              const lineIndex = _.floor(i % 25 / 5)
+              return 5+blockLine * (12*5+6) + lineIndex * (5*2+2) + offset
+          },
+          initUnitChart(){
+              const svg = d3.select('svg')
+              let that=this
+              const circleAppend = svg.selectAll('circle').data(this.jsonData).enter().append("circle")
+              circleAppend.attr('r', 5)
+                  .attr('fill', that.themeColorLight1)
+                  .attr('cx', function (d, i) {
+                      // console.log(d)
+                      return that.getOffsetX(i, 10,0)
+                  })
+                  .attr('cy', function (d, i) {
+                      return that.getOffsetY(i,10, 0)
+                  })
+          },
+          initCurveChartLegend(){
+              const labelList=["Democratic Party", "Republican Party", "No Party Affiliation", "Unknown"]
+              const colorList=[ this.themeColorLight1, this.themeColorDark3, this.themeColorLight3, "white"]
+              var ordinal = d3.scaleOrdinal()
+                  .domain(labelList)
+                  .range(colorList);
+
+              var svg = d3.select("svg");
+
+              svg.append("g")
+                  .attr("class", "legendOrdinal")
+                  .attr("transform", "translate(500,20)");
+
+              var legendOrdinal = d3.legendColor()
+                  //d3 symbol creates a path-string, for example
+                  //"M0,-8.059274488676564L9.306048591020996,
+                  //8.059274488676564 -9.306048591020996,8.059274488676564Z"
+                  .shape("path", d3.symbol().type(d3.symbolCircle).size(120)())
+                  .shapePadding(10)
+                  //use cellFilter to hide the "e" cell
+                  .scale(ordinal);
+
+              svg.select(".legendOrdinal")
+                  .call(legendOrdinal);
+
+              svg.selectAll(".label")
+                  .attr('fill',function (d) {
+                      console.log(colorList[_.indexOf(labelList,d)])
+                      return colorList[_.indexOf(labelList,d)]
+                  })
+                  .attr('font-weight', 800)
+
+          },
+          initCurveChart(){
+              function parliamentLayout(startAngle, endAngle, totalAngle, r0, r1, size) {
+                  let rowsCount = Math.ceil((r1 - r0) / size);
+                  // console.log(rowsCount)
+                  let points = [];
+                  let r = r0;
+                  let sum=0
+                  // console.log(this.jsonData)
+                  while (sum<that.jsonData.length){
+                      let totalRingSeatsNumber = Math.round((totalAngle * r) / size);
+                      let newSize = (totalAngle * r) / totalRingSeatsNumber;
+                      sum+=totalRingSeatsNumber
+                      for (
+                          let k = Math.floor((startAngle * r) / newSize) * newSize;
+                          k < Math.floor((endAngle * r) / newSize) * newSize - 1e-6;
+                          k += newSize
+                      ) {
+                          let angle = k / r;
+                          let x = Math.cos(angle) * r;
+                          let y = Math.sin(angle) * r;
+                          points.push([x, y]);
+                      }
+                      r += size;
+                  }
+                  // console.log(points)
+                  return points;
+              }
+              let that=this
+              const points=parliamentLayout(-Math.PI,Math.PI,Math.PI * 2,60,200,14)
+              const svg = d3.select('svg')
+              const allCircle=svg.selectAll('circle')
+              const orderedData=_.orderBy(this.jsonData,['Party'],['desc'])
+              allCircle.data(orderedData)
+                  .attr('cx', function (d,key) {
+                      return points[key][0]+200
+                  })
+                  .attr('cy', function (d, key) {
+                      return points[key][1]+200
+                  })
+                  .attr('fill',function(d){
+                      switch (d['Party']) {
+                          case 'R':
+                              return that.themeColorDark3
+                          case 'D':
+                              return that.themeColorLight1
+                          case 'I':
+                              return that.themeColorLight3
+                          default:
+                              return 'white'
+                      }
+                  })
+                  .attr('r', 5)
+              that.initCurveChartLegend()
+          },
+          initBarChart(){
+
+          },
+          initMap(){
+              $.get("geoJson/USA.json", function (data) {
+                  let map = L.map('screen4-map', {
+                      center: [38.633, -78.283],
+                      zoom: 4,
+                      attributionControl: false
+                  })
+                  L.geoJSON(data).addTo(map);
+                  $.get('geoJson/USAStateCenter.json', function (centerData) {
+                      _.forEach(centerData, function (item) {
+                          let myIcon = L.icon({
+                              iconUrl: 'images/map-pin-color1.svg',
+                              iconSize: [38, 95]
+                          });
+                          L.marker(new L.LatLng(item.value[1], item.value[0]), {
+                              icon: myIcon
+                          }).addTo(map)
+                      })
+                  })
+              })
+
+          }
+      },
+      mounted() {
+
+          this.initFullPage()
+          let that=this
+
+// var map=L.map("map").setview([51.505,-0.09],9);
+
+
+          $.get('data/data.json', function (data) {
+              that.jsonData=data
+              that.initUnitChart()
+              that.initCurveChart()
+          })
+
+          this.initMap()
+          // this.initScrollPage()
+      }
+  }
+
+  Vue.createApp(app).mount('#app')
+</script>
+</html>

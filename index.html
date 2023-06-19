@@ -5,7 +5,6 @@
     <title>Who runs America?</title>
 </head>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.20/fullpage.css" integrity="sha512-wCVOuVtxsXqrQK7tj9j4BvyfITQmpp7UE7mVilD7aieGLYFEIAa5UKTP1RapOf6dxQ9JIKAneakcyykWG4r4Ow==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-<link rel="stylesheet" href="//unpkg.com/element-plus/dist/index.css" />
 <link rel = "stylesheet" href="css/screenstyle.css">
 <body>
     <div id="app">
@@ -54,7 +53,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.20/fullpage.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
-<script src="//unpkg.com/element-plus"></script>
+<script src="https://cdn.jsdelivr.net/npm/less@4" ></script>
 <!--<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>-->
 <script>
     function triggerAnimation1() {
@@ -178,6 +177,7 @@
                             r1,
                             size + 3
                         );
+                        console.log(points)
                         return {
                             type: 'group',
                             children: points.map(function (pt) {
@@ -199,9 +199,7 @@
                 }
             };
         })();
-        const barOption=(function () {
-            
-        })
+        console.log(parliamentOption)
         myChart.setOption(parliamentOption);
     }
     const {createApp} = Vue

@@ -1,0 +1,52 @@
+@theme-color-light-1:#fece00;
+@theme-color-light-2:#fe7c00;
+@theme-color-light-3:#fef471;
+
+@theme-color-dark-1:#013183;
+@theme-color-dark-2:#001547;
+@theme-color-dark-3:#0261bf;
+
+@chart-width:800px;
+@chart-height:600px;
+
+*{
+  margin: 0;
+  padding: 0;
+}
+
+.background-color-dark{
+  background-color: @theme-color-dark-2;
+}
+
+.full-screen{
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top:0;
+}
+
+#screen1-str{
+  text-align: center;
+  font-weight: bolder;
+  color: #fff455;
+  font-size: 80px;
+  position: relative;
+  top:50%;
+  transform:translateY(-50%);
+}
+
+#screen2-chart{
+  width: @chart-width;
+  height: @chart-height;
+}
+
+#screen3-map{
+  width: @chart-width;
+  height: @chart-height;
+}
+
+#screen4-map{
+  width: @chart-width;
+  height: @chart-height;
+  background-color: @theme-color-dark-2;
+}
